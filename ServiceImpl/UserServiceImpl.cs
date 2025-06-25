@@ -17,6 +17,9 @@ namespace NewjeProject.ServiceImpl
 
         public async Task AddNewUser(User user)
         {
+            // 🔐 Hash the password before saving
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
         }

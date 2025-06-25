@@ -23,17 +23,18 @@ public class AuthService : IAuthRepository
         if (login.Username == null || login.Password == null)
             throw new Exception("Username ya Password khali hai");
 
-        // Step 2: User ko database me dhundo
+        // Step 2: User find karo by username
         var user = _appDBContext.Users
-            .FirstOrDefault(u => u.UserName == login.Username && u.Password == login.Password);
+            .FirstOrDefault(u => u.UserName == login.Username);
 
-        // Step 3: Agar user nahi mila to error
-        if (user == null)
+        // Step 3: User exist karta hai aur password match karta hai?
+        if (user == null || !BCrypt.Net.BCrypt.Verify(login.Password, user.Password))
             throw new Exception("Username ya Password galat hai");
 
-        // Step 4: Token return karo
+        // Step 4: Token generate aur return
         return GenerateJwtToken(user);
     }
+
 
 
     private string GenerateJwtToken(User user)

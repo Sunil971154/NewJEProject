@@ -1,0 +1,88 @@
+####################################
+# Build Results
+####################################
+bin/
+obj/
+Debug/
+Release/
+appsettings.Development.json
+Revision-Project.csproj.user
+
+/Migrations
+
+
+
+####################################
+# User-specific Files
+####################################
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+####################################
+# IIS Express
+####################################
+.vs/
+*.vspscc
+*.vssscc
+*.iisexpress/
+
+####################################
+# Entity Framework
+####################################
+Migrations/
+App_Data/*.mdf
+App_Data/*.ldf
+
+####################################
+# NuGet Packages
+####################################
+packages/
+*.nupkg
+project.lock.json
+project.assets.json
+
+####################################
+# Logs
+####################################
+*.log
+
+####################################
+# Web Publish
+####################################
+*.Publish.xml
+*.pubxml
+*.pubxml.user
+publish/
+
+####################################
+# Compiled Assemblies
+####################################
+*.dll
+*.exe
+*.pdb
+*.mdb
+
+####################################
+# Resharper & Rider
+####################################
+_ReSharper*/
+*.DotSettings.user
+.idea/
+
+####################################
+# VS Code
+####################################
+.vscode/
+
+####################################
+# Others
+####################################
+TestResults/
+*.dbmdl
+*.cache
+*.bak
+*.tmp
+Thumbs.db
+.DS_Store

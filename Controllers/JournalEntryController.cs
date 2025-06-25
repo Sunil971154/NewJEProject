@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NewjeProject.Data;
@@ -8,6 +9,7 @@ using NewjeProject.Models;
 
 namespace JerEntryWebApp.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("journal")]
     public class JournalEntryController : ControllerBase

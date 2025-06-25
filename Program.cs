@@ -1,9 +1,12 @@
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NewjeProject.Data;
 using NewjeProject.Interface;
 using NewjeProject.ServiceImpl;
 using Revision_Project.ServiceIMPL;
+using System.Text;
 
 namespace NewjeProject
 {
@@ -20,6 +23,23 @@ namespace NewjeProject
             // Add services to the container.
             builder.Services.AddScoped<IJERepository, JERepository>();
             builder.Services.AddScoped<IUserRepository, UserServiceImpl>();
+            builder.Services.AddScoped<IAuthRepository, AuthService>();
+            // Add Authentication
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                };
+            });
+
+
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

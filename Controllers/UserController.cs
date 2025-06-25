@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NewjeProject.Interface;
 using NewjeProject.Models;
 
 namespace NewjeProject.Controllers
 {
+    
     [Route("user")]
     [ApiController]
     public class UserController : ControllerBase
@@ -20,6 +22,7 @@ namespace NewjeProject.Controllers
    
         // 1.0 Read
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<User>>> GetAllUsers()
         {
             var users = await _userService.GetAllUser();
@@ -35,9 +38,10 @@ namespace NewjeProject.Controllers
             return Ok(user);
         }
 
- 
+        [Authorize]
         // 3.1 Update
         [HttpPut("{userName}")]
+      
         public async Task<IActionResult> UpdateUser([FromBody] User user, [FromRoute] string userName)
         {
             var userInDb = await _userService.FindByUserName(userName);
@@ -56,7 +60,7 @@ namespace NewjeProject.Controllers
             return Ok("Updated successfully");
         }
 
-
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {

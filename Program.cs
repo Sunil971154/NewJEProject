@@ -18,6 +18,7 @@ namespace NewjeProject
 
             // Add services to the container.
             builder.Services.AddScoped<IJERepository, JERepository>();
+            builder.Services.AddScoped<IUserRepository, UserServiceImpl>();
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

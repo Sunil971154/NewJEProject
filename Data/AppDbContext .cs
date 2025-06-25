@@ -36,6 +36,8 @@ namespace NewjeProject.Data
       
         
         public DbSet<JournalEntry> JournalEntries { get; set; }
+        
+        public DbSet<User> Users { get; set; }
 
     }
 }

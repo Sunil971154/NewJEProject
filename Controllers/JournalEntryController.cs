@@ -1,72 +1,68 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NewjeProject.Interface;
 using NewjeProject.Models;
-using System.Collections.Concurrent;
+ 
 
-namespace NewjeProject.Controllers
+namespace Revision_Project.Controllers
 {
     [Route("journal")]
     [ApiController]
     public class JournalEntryController : ControllerBase
     {
+        private readonly IJERepository _jerepository;
 
-        // Thread-safe dictionary to simulate in-memory data storeAdd commentMore actions
-        private static ConcurrentDictionary<long, JournalEntry> journalEntries = new ConcurrentDictionary<long, JournalEntry>();
+        public JournalEntryController(IJERepository repository)
+        {
+            _jerepository = repository;
+        }
 
-     
         [HttpGet]
-        public ActionResult<IEnumerable<JournalEntry>> GetAll()
+        public async Task<ActionResult<List<JournalEntry>>> GetAll()
         {
-            //return Ok(new List<JournalEntry>(journalEntries.Values));  isse bhi same hoga 
-            return Ok(journalEntries.Values);
-        }
-
-      
-        [HttpPost]
-        public ActionResult CreateEntry([FromBody] JournalEntry journalEntry)
-        {
-            journalEntries[journalEntry.Id] = journalEntry;
-            return Ok("Journal Entry Created");
-        }
-
-
-        [HttpGet("id/{myId}")]
-        public ActionResult<JournalEntry> GetJournalEntryById(long myId)
-        {
-            //TryGetValue एक method है जो Dictionary या ConcurrentDictionary में मौजूद key के लिए उसकी value को safely निकालने का तरीका है।
-            if (journalEntries.TryGetValue(myId, out var entry))
+            var entries = await _jerepository.GetAll();           // 🔁 Repository se saare journal entries laao
+            if (entries == null || !entries.Any())
             {
-                return Ok(entry);
+                return NotFound("No journal entries found.");     // ❌ 404 Not Found with message
             }
-            return NotFound();
+
+            return Ok(entries);                                    // ✅ HTTP 200 OK ke saath list return karo
         }
 
+        [HttpGet("id/{id}")]
+        public async Task<ActionResult<JournalEntry>> GetById(int id)
+        {
+            var entry = await _jerepository.GetById(id);          // 🔍 ID ke basis pe ek entry fetch karo
+            if (entry == null) return NotFound();                 // ❌ Agar nahi mili to 404 bhejo
+            return Ok(entry);                                     // ✅ Entry mili to OK return karo
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<JournalEntry>> Create([FromBody] JournalEntry entry)
+        {
+            if (entry == null)                                  // ❗ Client ne null bheja to bad request bhejo
+                return BadRequest("Invalid data.");
+
+            var saved = await _jerepository.SaveEntry(entry); // 💾 Repository se new entry save karo
+            return Ok(saved);                                 // ✅ Save hone ke baad OK return karo
+        }
 
         [HttpPut("id/{id}")]
-        public ActionResult<JournalEntry> UpdateJournalEntry(long id, [FromBody] JournalEntry myEntry)
+        public async Task<ActionResult<JournalEntry>> Update(int id, [FromBody] JournalEntry entry)
         {
-            //ContainsKey method है:Dictionary<TKey, TValue> और ConcurrentDictionary<TKey, TValue> का।
-            if (!journalEntries.ContainsKey(id))
-            {
-                return NotFound();
-            }
-            journalEntries[id] = myEntry;
-            return Ok(myEntry);
+            var updated = await _jerepository.UpdateById(id, entry); // 🔁 Existing entry update karo
+            if (updated == null) return NotFound();                 // ❌ Entry nahi mili to 404 return karo
+            return Ok(updated);                                   // ✅ Update hone ke baad OK return karo
         }
 
 
-        [HttpDelete("id/{myId}")]
-        public ActionResult<JournalEntry> DeleteJournalEntry(int myId)
+        [HttpDelete("id/{id}")]
+        public async Task<ActionResult> Delete(int id)
         {
-            //TryRemove एक method है जो ConcurrentDictionary में दी गई key को safely हटाता है और उसकी value return करता है—अगर key न मिले तो quietly fail हो जाता है।
-            if (journalEntries.TryRemove(myId, out var removedEntry))
-            {                
-                return Ok($"'{removedEntry}' Deleted Succesfully ");
-            }
-            return NotFound();
+            var deleted = await _jerepository.DeleteById(id);        // 🗑️ Entry ko delete karo
+            if (deleted == null) 
+                return NotFound();                                  // ❌ Entry na mile to NotFound
+            return Ok("Deleted successfully");                     // ✅ Successfully delete message bhejo
         }
-
-        
-
     }
 }

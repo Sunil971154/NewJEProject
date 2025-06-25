@@ -5,9 +5,7 @@ bin/
 obj/
 Debug/
 Release/
-appsettings.Development.json
-Revision-Project.csproj.user
-
+  
 /Migrations
 
 

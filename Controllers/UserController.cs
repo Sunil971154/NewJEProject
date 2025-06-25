@@ -35,7 +35,7 @@ namespace NewjeProject.Controllers
             return Ok(user);
         }
 
-        //[Authorize]
+ 
         // 3.1 Update
         [HttpPut("{userName}")]
         public async Task<IActionResult> UpdateUser([FromBody] User user, [FromRoute] string userName)

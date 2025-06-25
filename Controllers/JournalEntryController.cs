@@ -1,68 +1,108 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using NewjeProject.Data;
 using NewjeProject.Interface;
 using NewjeProject.Models;
  
 
-namespace Revision_Project.Controllers
+namespace JerEntryWebApp.Controllers
 {
-    [Route("journal")]
     [ApiController]
+    [Route("journal")]
     public class JournalEntryController : ControllerBase
     {
-        private readonly IJERepository _jerepository;
+        private readonly AppDbContext _context;
+        private readonly IUserRepository _iuserService;
+        private readonly IJERepository _iJerService;
 
-        public JournalEntryController(IJERepository repository)
+        public JournalEntryController(AppDbContext context, IUserRepository userService, IJERepository iJerService)
         {
-            _jerepository = repository;
+            _context = context;
+            _iuserService = userService;
+            _iJerService = iJerService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<JournalEntry>>> GetAll()
+        [HttpGet("{userName}")]
+        public async Task<IActionResult> GetAllJournalEntriesOfUser(string userName)
         {
-            var entries = await _jerepository.GetAll();           // 🔁 Repository se saare journal entries laao
-            if (entries == null || !entries.Any())
+            var user = await _iuserService.FindByUserName(userName);
+            if (user == null)
             {
-                return NotFound("No journal entries found.");     // ❌ 404 Not Found with message
+                return NotFound(); // User not found
             }
-
-            return Ok(entries);                                    // ✅ HTTP 200 OK ke saath list return karo
+            var journalEntries = user.JournalEntries; // Navigation property
+            if (journalEntries != null && journalEntries.Any())
+            {
+                return Ok(journalEntries); // Return list of journal entries
+            }
+            return NotFound(); // No entries found
         }
+
+        [HttpPost("{userName}")]
+        public async Task<ActionResult<JournalEntry>> CreateEntryOfUser([FromBody] JournalEntry myEntry, [FromRoute] string userName)
+        {
+            try
+            {
+
+                await _iJerService.SaveEntryWithUser(myEntry, userName);
+                return Created(string.Empty, myEntry); // 201 Created
+            }
+            catch (Exception ex)
+            {
+                // Optionally log the error
+                return StatusCode(500, "An error occurred while creating the journal entry.");
+            }
+        }
+
 
         [HttpGet("id/{id}")]
         public async Task<ActionResult<JournalEntry>> GetById(int id)
         {
-            var entry = await _jerepository.GetById(id);          // 🔍 ID ke basis pe ek entry fetch karo
-            if (entry == null) return NotFound();                 // ❌ Agar nahi mili to 404 bhejo
-            return Ok(entry);                                     // ✅ Entry mili to OK return karo
+            var entry = await _context.JournalEntries.FindAsync(id);
+            if (entry == null)
+                return NotFound();
+
+            return Ok(entry);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<JournalEntry>> Create([FromBody] JournalEntry entry)
+        [HttpPut("id/{userName}/{myid}")]
+        public async Task<IActionResult> UpdateJEById(string userName, int myid, [FromBody] JournalEntry updatedEntry)
         {
-            if (entry == null)                                  // ❗ Client ne null bheja to bad request bhejo
-                return BadRequest("Invalid data.");
+            var oldEntry = await _context.JournalEntries
+                                         .FirstOrDefaultAsync(e => e.Id == myid && e.User.UserName == userName);
 
-            var saved = await _jerepository.SaveEntry(entry); // 💾 Repository se new entry save karo
-            return Ok(saved);                                 // ✅ Save hone ke baad OK return karo
-        }
+            if (oldEntry != null)
+            {
+                oldEntry.Title = !string.IsNullOrWhiteSpace(updatedEntry.Title)
+                    ? updatedEntry.Title
+                    : oldEntry.Title;
 
-        [HttpPut("id/{id}")]
-        public async Task<ActionResult<JournalEntry>> Update(int id, [FromBody] JournalEntry entry)
-        {
-            var updated = await _jerepository.UpdateById(id, entry); // 🔁 Existing entry update karo
-            if (updated == null) return NotFound();                 // ❌ Entry nahi mili to 404 return karo
-            return Ok(updated);                                   // ✅ Update hone ke baad OK return karo
+                oldEntry.Content = !string.IsNullOrWhiteSpace(updatedEntry.Content)
+                    ? updatedEntry.Content
+                    : oldEntry.Content;
+
+                _context.JournalEntries.Update(oldEntry);
+                await _context.SaveChangesAsync();
+
+                return Ok(oldEntry); // 200 OK
+            }
+
+            return NotFound(); // 404
         }
 
 
         [HttpDelete("id/{id}")]
-        public async Task<ActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var deleted = await _jerepository.DeleteById(id);        // 🗑️ Entry ko delete karo
-            if (deleted == null) 
-                return NotFound();                                  // ❌ Entry na mile to NotFound
-            return Ok("Deleted successfully");                     // ✅ Successfully delete message bhejo
+            var entry = await _context.JournalEntries.FindAsync(id);
+            if (entry == null)
+                return NotFound();
+
+            _context.JournalEntries.Remove(entry);
+            await _context.SaveChangesAsync();
+
+            return Ok("Deleted Successfully");
         }
     }
 }

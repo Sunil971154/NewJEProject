@@ -55,6 +55,24 @@ namespace NewjeProject.Controllers
 
             return Ok("Updated successfully");
         }
-          
+
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var user = await _userService.FindById(id); // 🧠 Check if user exists
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            await _userService.DeleteById(id); // 💥 Cascade delete happens here
+            return Ok("User and their journal entries deleted");
+        }
+
+
+
+
+
     }
 }

@@ -102,7 +102,7 @@ namespace JerEntryWebApp.Controllers
             _context.JournalEntries.Remove(entry);
             await _context.SaveChangesAsync();
 
-            return Ok("Deleted Successfully");
+            return Ok(" Journal Deleted Successfully");
         }
     }
 }

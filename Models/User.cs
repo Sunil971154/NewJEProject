@@ -5,7 +5,7 @@ namespace NewjeProject.Models
     public class User
     {
         [Key]  
-        public int? Id { get; set; }         // SQL Server में ज्यादातर int primary key होता है, लेकिन आप GUID भी use कर सकते हैं         
+        public int Id { get; set; }         // SQL Server में ज्यादातर int primary key होता है, लेकिन आप GUID भी use कर सकते हैं         
         
         [Required]                           // EF Core में सीधे attribute से नहीं होता, नीचे Fluent API में दिखाते हैं
         public string UserName { get; set; }

@@ -39,7 +39,7 @@ namespace NewjeProject.ServiceImpl
         }
 
 
-        public async Task DeleteById(Guid id)
+        public async Task DeleteById(int id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user != null)
@@ -60,5 +60,14 @@ namespace NewjeProject.ServiceImpl
                 // userName ke base par first matching user ko laate hain
                 .FirstOrDefaultAsync(u => u.UserName == userName);
         }
+
+        public async Task<User?> FindById(int id)
+        {
+            return await _context.Users
+                                 .Include(u => u.JournalEntries)
+                                 .FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+
     }
 }

@@ -39,5 +39,15 @@ namespace NewjeProject.Data
         
         public DbSet<User> Users { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // ✅ Configure Cascade Delete between User and JournalEntry
+            modelBuilder.Entity<JournalEntry>()
+                .HasOne(j => j.User)
+                .WithMany(u => u.JournalEntries)
+                .HasForeignKey(j => j.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        }
+
     }
 }

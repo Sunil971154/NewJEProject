@@ -10,11 +10,11 @@ namespace NewjeProject.Interface
 
         Task<List<User>> GetAllUser();                             // Read All
         Task<User?> FindByUserName(Guid id);                       // Read by ID
-        Task DeleteById(Guid id);                            // Delete
+                            
         Task<User?> FindByUserName(string userName);         // Read by Username
-
-
-
+                  
+        Task<User?> FindById(int id);
+        Task DeleteById(int id);
 
 
 

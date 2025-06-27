@@ -15,14 +15,22 @@ namespace NewjeProject.ServiceImpl
         }
 
 
-        public async Task AddNewUser(User user)
-        {
-            // 🔐 Hash the password before saving
+        public async Task AddNewUser(User user, bool isGoogleUser = false)
+    {
+        if (!isGoogleUser)// normal user signup
+            {
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            user.Provider = "Local";
         }
+        else
+        {
+            user.Password = null;
+            user.Provider = "Google";
+        }
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+    }
 
         public async Task UpdateUser(User user)
         {

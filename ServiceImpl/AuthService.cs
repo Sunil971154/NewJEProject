@@ -9,12 +9,12 @@ using NewjeProject.Interface;
 public class AuthService : IAuthRepository   
 {
     private readonly AppDbContext _appDBContext;
-    private readonly IConfiguration _configuration;
+    private readonly IJwtService _jwtService;
 
-    public AuthService(AppDbContext context, IConfiguration configuration)
+    public AuthService(AppDbContext context, IJwtService jwtService)
     {
         _appDBContext = context;
-        _configuration = configuration;
+        _jwtService = jwtService;
     }
 
     public string Login(LoginModel login)
@@ -32,37 +32,9 @@ public class AuthService : IAuthRepository
             throw new Exception("Username ya Password galat hai");
 
         // Step 4: Token generate aur return
-        return GenerateJwtToken(user);
+        return _jwtService.GenerateJwtToken(user);
     }
-
-
-
-    private string GenerateJwtToken(User user)
-    {
-        // 🔐 1. Get secret key from configuration and convert to bytes
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-
-        // 📝 2. Create signing credentials using HMAC SHA256
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        // 👤 3. Add user-related claims (info stored inside the token)
-        var claims = new[]
-        {
-        new Claim("Id", user.Id.ToString()),
-        new Claim("UserName", user.UserName)
-    };
-
-        // 🎟️ 4. Create the JWT token
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],      // Who issued the token
-            audience: _configuration["Jwt:Audience"],  // Who can use the token
-            claims: claims,                            // What info inside token
-            expires: DateTime.UtcNow.AddMinutes(60),   // Expiry time (1 hour)
-            signingCredentials: creds                  // Signing info
-        );
-
-        // 🔁 5. Convert token object to string and return
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
+     
+   
 
 }
